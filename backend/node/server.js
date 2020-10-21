@@ -39,6 +39,31 @@ connection.connect(function (err) {
   logger.info("Connected to the DB!");
 });
 
+//POST /login
+app.post('/login', (req, res) => {
+	//TODO
+});
+
+//POST /account
+app.post('/account', (req, res) => {
+	//TODO
+});
+
+//GET /account/{accountID}
+app.get('/account/:id', (req, res) => {
+	//TODO
+});
+
+//PUT /account/{accountID}
+app.put('/account/:id', (req, res) => {
+	//TODO
+});
+
+//GET /account/{accountID}
+app.delete('/account/:id', (req, res) => {
+	//TODO
+});
+
 //GET /
 app.get('/', (req, res) => {
   res.status(200).send('Go to 0.0.0.0:3000.');
