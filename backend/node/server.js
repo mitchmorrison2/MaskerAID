@@ -46,27 +46,29 @@ connection.connect(function (err) {
 
 //POST /login
 app.post('/login', (req, res) => {
-	let valid = false;
 	let id = 0;
+	let stop = false;
 	
 	//Check if the username and password are valid
-	connection.query("SELECT userID, password, locked FROM user WHERE email = " + req.body.email, 
+	connection.query("SELECT userID, password FROM user WHERE locked IS NOT 1 AND email = " + req.body.email, 
 	function (err, rows, fields) {
 		if (err) throw err;
 		
 		const hash = crypto.scryptSync(req.body.password, salt, 64);
-		if (!rows[0].locked && rows[0].password === hash) valid = true;
-		else {
+		if (rows.length === 0 || rows[0].password !== hash) {
 			res.status(401).send();
+			stop = true;
 			return;
 		}
 
 		id = rows[0].userID;
 	});
 
+	if (stop) return;
+
 	//Generate a cookie
 	const cookie = id + ":" randstr.generate();
-	connection.query("UPDATE user SET cookie = $(cookie), sessionExpiration = now() + INTERVAL 1 DAY WHERE email = $(req.body.email)",
+	connection.query("UPDATE user SET cookie = $(cookie), sessionExpiration = now() + INTERVAL 1 DAY WHERE email = $(req.body.email)", function (err, rows, fields) {
 		if (err) throw err;
 
 		res.status(200).send(cookie);
@@ -75,12 +77,49 @@ app.post('/login', (req, res) => {
 
 //POST /account
 app.post('/account', (req, res) => {
-	 
+	let stop = false;
+
+	//Check if the email, password and type fields are not blank
+	if (req.body.email === "" || req.body.password === "" || req.body.type === "") {
+		res.status(400).send();
+		stop = true;
+	});
+
+	if (stop) return;
+
+	//Check if the email is unique
+	connection.query("SELECT * FROM user WHERE email = $(req.body.email)", function (err, rows, fields) {
+		if (err) throw err;
+		if (rows.length >= 1) {
+			res.status(403).send();
+			stop = true;
+		} 
+	});
+
+	if (stop) return;
+
+	//Add the account info to the database
+	const hash = crypto.scryptSync(req.body.password, salt, 64);
+	const s = "\"" + req.body.email + "\"," +
+		"\"" + hash + "\"," +
+		"\"" + req.body.name + "\"," +
+		"\"" + req.body.type + "\"," +
+		"\"" + req.body.phone + "\"," +
+		"\"" + req.body.addressLine1 + "\"," +
+		"\"" + req.body.addressLine2 + "\"," +
+		"\"" + req.body.territory + "\"," +
+		"\"" + req.body.postalcode + "\"," +
+		"\"" + req.body.country + "\")";
+	connection.query("INSERT INTO user (email, password, name, type, phone, addressLine1, addressLine2, territory, postalcode, country) VALUES (" + s, function (err, rows, fields) {
+		if (err) throw err;
+		res.status(200).send();
+	}
+	
 });
 
 //GET /account/{accountID}
 app.get('/account/:id', (req, res) => {
-	connection.query("SELECT email, type, name, phone, addressLine1, addressLine2, state, country, postalcode FROM user WHERE userID = " + req.param.id, function (err, rows, fields) {
+	connection.query("SELECT email, type, name, phone, addressLine1, addressLine2, state, country, postalcode FROM user WHERE locked IS NOT 1 AND userID = " + req.param.id, function (err, rows, fields) {
 		if (err) throw err;
 		
 		res.status(200).send(JSON.stringify(rows));
@@ -89,13 +128,11 @@ app.get('/account/:id', (req, res) => {
 
 //PUT /account/{accountID}
 app.put('/account/:id', (req, res) => {
-	let validCookie = false;
 	//TODO
 });
 
-//GET /account/{accountID}
+//DELETE /account/{accountID}
 app.delete('/account/:id', (req, res) => {
-	let validCookie = false;
 	//TODO
 });
 
