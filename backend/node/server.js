@@ -128,7 +128,40 @@ app.get('/account/:id', (req, res) => {
 
 //PUT /account/{accountID}
 app.put('/account/:id', (req, res) => {
-	//TODO
+	let stop = false;	
+
+	//Check if the cookie and password are valid
+	connection.query("SELECT cookie, password FROM user WHERE locked IS NOT 1 AND userID" + req.param.id, 
+	function (err, rows, fields) {
+		if (err) throw err;
+		
+		const hash = crypto.scryptSync(req.body.password, salt, 64);
+		if (rows.length === 0 || rows[0].password !== hash || rows[0].cookie !== req.body.cookie) {
+			res.status(401).send();
+			stop = true;
+			return;
+		}
+	});
+
+	if (stop) return;
+
+	//Add the account info to the database
+	const hash = crypto.scryptSync(req.body.password_new, salt, 64); 
+	let s = "email = \"" + req.body.email + "\"," +
+		"name = \"" + req.body.name + "\"," +
+		"phone = \"" + req.body.phone + "\"," +
+		"addressLine1 = \"" + req.body.addressLine1 + "\"," +
+		"addressLine2 = \"" + req.body.addressLine2 + "\"," +
+		"territory = \"" + req.body.territory + "\"," +
+		"postalcode = \"" + req.body.postalcode + "\"," +
+		"country = \"" + req.body.country + "\"";
+
+	if (password_new !== "") s += ", password = \"" + hash + "\"";
+
+	connection.query("UPDATE user SET " + s + "WHERE userID = " + req.param.id, function (err, rows, fields) {
+		if (err) throw err;
+		res.status(200).send();
+	}
 });
 
 //DELETE /account/{accountID}
