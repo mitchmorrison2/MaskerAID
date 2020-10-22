@@ -2,7 +2,12 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mysql = require('mysql');
+const crypto = require('crypto');
+const randstr = require("randomstring");
 const { log, ExpressAPILogMiddleware } = require('@rama41222/node-logger');
+
+//Salt for password hashing
+const salt = "wtfThisIsn'tRandom";
 
 //mysql connection
 var connection = mysql.createConnection({
@@ -41,7 +46,31 @@ connection.connect(function (err) {
 
 //POST /login
 app.post('/login', (req, res) => {
-	//TODO
+	let valid = false;
+	let id = 0;
+	
+	//Check if the username and password are valid
+	connection.query("SELECT userID, password FROM user WHERE email = " + req.param.email, 
+	function (err, rows, fields) {
+		if (err) throw err;
+		
+		const hash = crypto.scryptSync(req.param.password, salt, 64);
+		if (rows[0].password === hash) valid = true;
+		else {
+			res.status(401).send();
+			return;
+		}
+
+		id = rows[0].userID;
+	});
+
+	//Generate a cookie
+	const cookie = id + ":" randstr.generate();
+	connection.query("UPDATE user SET cookie = $(cookie), sessionExpiration = now() + INTERVAL 1 DAY WHERE email = $(req.param.email)", function (err, rows, fields) {
+		if (err) throw err;
+
+		res.status(200).send(cookie);
+	}
 });
 
 //POST /account
@@ -51,16 +80,19 @@ app.post('/account', (req, res) => {
 
 //GET /account/{accountID}
 app.get('/account/:id', (req, res) => {
+	let validCookie = false;
 	//TODO
 });
 
 //PUT /account/{accountID}
 app.put('/account/:id', (req, res) => {
+	let validCookie = false;
 	//TODO
 });
 
 //GET /account/{accountID}
 app.delete('/account/:id', (req, res) => {
+	let validCookie = false;
 	//TODO
 });
 
