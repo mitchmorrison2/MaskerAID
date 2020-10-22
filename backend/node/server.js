@@ -113,7 +113,7 @@ app.post('/account', (req, res) => {
 	connection.query("INSERT INTO user (email, password, name, type, phone, addressLine1, addressLine2, territory, postalcode, country) VALUES (" + s, function (err, rows, fields) {
 		if (err) throw err;
 		res.status(200).send();
-	}
+	});
 	
 });
 
@@ -161,7 +161,7 @@ app.put('/account/:id', (req, res) => {
 	connection.query("UPDATE user SET " + s + "WHERE userID = " + req.param.id, function (err, rows, fields) {
 		if (err) throw err;
 		res.status(200).send();
-	}
+	});
 });
 
 //DELETE /account/{accountID}
@@ -188,7 +188,7 @@ app.delete('/account/:id', (req, res) => {
 	function (err, rows, fields) {
 		if (err) throw err;
 		res.status(200).send();
-	}
+	});
 });
 
 //connecting the express object to listen on a particular port as defined in the config object.
