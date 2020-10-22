@@ -133,7 +133,29 @@ app.put('/account/:id', (req, res) => {
 
 //DELETE /account/{accountID}
 app.delete('/account/:id', (req, res) => {
-	//TODO
+	let stop = false;
+
+	//Check if the cookie and password are valid
+	connection.query("SELECT cookie, password FROM user WHERE locked IS NOT 1 AND userID" + req.param.id, 
+	function (err, rows, fields) {
+		if (err) throw err;
+		
+		const hash = crypto.scryptSync(req.body.password, salt, 64);
+		if (rows.length === 0 || rows[0].password !== hash || rows[0].cookie !== req.body.cookie) {
+			res.status(401).send();
+			stop = true;
+			return;
+		}
+	});
+
+	if (stop) return;
+
+	//Disable the user
+	connection.query("UPDATE user SET locked = 1 WHERE userID = $(req.body.cookie)",
+	function (err, rows, fields) {
+		if (err) throw err;
+		res.status(200).send();
+	}
 });
 
 //connecting the express object to listen on a particular port as defined in the config object.
