@@ -23,7 +23,7 @@ class App extends React.Component {
   handleSubmit = (e) => {
     e.preventDefault();
     let prod = this.state.number * this.state.number;
-    axios.post('http://localhost:8000/multplynumber', {product: prod}).then(res => {
+    axios.post('http://localhost:8000/multplynumber', {product: prod}).then(res =>{
       console.log(res);
       this.fetchVals();
     });
@@ -54,7 +54,7 @@ class App extends React.Component {
   }
 
 
-  render(){
+  render(){/*
     return (
       <div className="App">
         <header className="App-header">
@@ -67,8 +67,29 @@ class App extends React.Component {
           <ul>
             { this.state.values.map((value, i) => <li key={i}>{value.value}</li>) }
           </ul>
+          <button className="test">Press this button</button>
+          
         </header>
-      </div>
+      </div>*/
+      return (<div className="form-group col-md-6">
+
+          <h1 className="">MaskerAid</h1>
+          <label htmlFor="username">Username</label>
+          <input className="form-control" type="text" name="username" id="username"/>
+          <br/>
+          <label htmlFor="password">Password</label>
+          <input className="form-control" type="password" name="password" id="password"/>
+          <br/>
+          <label htmlFor="acct-type">Account type</label>
+          <select className="form-control" id="account-type">
+            <option></option>
+            <option>Distributor</option>
+            <option>Government</option>
+            <option>etc etc...</option>
+          </select>
+          <button className="btn btn-primary btn-block">Login</button>
+          <p>Don't have an account?</p>
+        </div>
     );
   }
 
