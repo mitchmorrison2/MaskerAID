@@ -1,5 +1,16 @@
 import React from 'react';
 import './App.css';
+import { AccountEditor } from './accounts/AccountEditor';
+
+function App() {
+  return <Login />;
+}
+
+export default App;
+
+
+/*import React from 'react';
+import './App.css';
 import axios from 'axios';
 
 class App extends React.Component {
@@ -75,3 +86,4 @@ class App extends React.Component {
 }
 
 export default App;
+*/
