@@ -50,12 +50,12 @@ app.post('/login', (req, res) => {
 	let id = 0;
 	
 	//Check if the username and password are valid
-	connection.query("SELECT userID, password FROM user WHERE email = " + req.param.email, 
+	connection.query("SELECT userID, password, locked FROM user WHERE email = " + req.body.email, 
 	function (err, rows, fields) {
 		if (err) throw err;
 		
-		const hash = crypto.scryptSync(req.param.password, salt, 64);
-		if (rows[0].password === hash) valid = true;
+		const hash = crypto.scryptSync(req.body.password, salt, 64);
+		if (!rows[0].locked && rows[0].password === hash) valid = true;
 		else {
 			res.status(401).send();
 			return;
@@ -66,22 +66,25 @@ app.post('/login', (req, res) => {
 
 	//Generate a cookie
 	const cookie = id + ":" randstr.generate();
-	connection.query("UPDATE user SET cookie = $(cookie), sessionExpiration = now() + INTERVAL 1 DAY WHERE email = $(req.param.email)", function (err, rows, fields) {
+	connection.query("UPDATE user SET cookie = $(cookie), sessionExpiration = now() + INTERVAL 1 DAY WHERE email = $(req.body.email)",
 		if (err) throw err;
 
 		res.status(200).send(cookie);
-	}
+	});
 });
 
 //POST /account
 app.post('/account', (req, res) => {
-	//TODO
+	 
 });
 
 //GET /account/{accountID}
 app.get('/account/:id', (req, res) => {
-	let validCookie = false;
-	//TODO
+	connection.query("SELECT email, type, name, phone, addressLine1, addressLine2, state, country, postalcode FROM user WHERE userID = " + req.param.id, function (err, rows, fields) {
+		if (err) throw err;
+		
+		res.status(200).send(JSON.stringify(rows));
+	});
 });
 
 //PUT /account/{accountID}
