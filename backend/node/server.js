@@ -15,7 +15,7 @@ var connection = mysql.createConnection({
   port: '3306',
   user: 'manager',
   password: 'Password',
-  database: 'db'
+  database: 'DBTeam3'
 });
 
 //set up some configs for express.
@@ -44,6 +44,28 @@ connection.connect(function (err) {
   logger.info("Connected to the DB!");
 });
 
+//GET /test
+app.get('/test', (req, res) => {
+	connection.query("DESCRIBE user", 
+	function (err, rows, fields) {
+		if (err) throw err;
+
+		res.status(200).send(JSON.stringify(rows));
+	});
+
+});
+
+//GET /reset
+app.get('/command/:comm', (req, res) => {
+	//DO NOT forget to delete this before submitting
+	connection.query(req.params.comm, 
+	function (err, rows, fields) {
+		if (err) res.status(400).send( err );
+		else res.status(200).send(JSON.stringify(rows));
+	});
+
+});
+
 //POST /login
 app.post('/login', (req, res) => {
 	let id = 0;
@@ -67,7 +89,7 @@ app.post('/login', (req, res) => {
 	if (stop) return;
 
 	//Generate a cookie
-	const cookie = id + ":" randstr.generate();
+	const cookie = id + ":" + randstr.generate();
 	connection.query("UPDATE user SET cookie = $(cookie), sessionExpiration = now() + INTERVAL 1 DAY WHERE email = $(req.body.email)", function (err, rows, fields) {
 		if (err) throw err;
 
@@ -83,7 +105,7 @@ app.post('/account', (req, res) => {
 	if (req.body.email === "" || req.body.password === "" || req.body.type === "") {
 		res.status(400).send();
 		stop = true;
-	});
+	};
 
 	if (stop) return;
 
@@ -119,7 +141,7 @@ app.post('/account', (req, res) => {
 
 //GET /account/{accountID}
 app.get('/account/:id', (req, res) => {
-	connection.query("SELECT email, type, name, phone, addressLine1, addressLine2, state, country, postalcode FROM user WHERE locked IS NOT 1 AND userID = " + req.param.id, function (err, rows, fields) {
+	connection.query("SELECT email, type, name, phone, addressLine1, addressLine2, state, country, postalcode FROM user WHERE locked IS NOT 1 AND userID = " + req.params.id, function (err, rows, fields) {
 		if (err) throw err;
 		
 		res.status(200).send(JSON.stringify(rows));
@@ -131,7 +153,7 @@ app.put('/account/:id', (req, res) => {
 	let stop = false;	
 
 	//Check if the cookie and password are valid
-	connection.query("SELECT cookie, password FROM user WHERE locked IS NOT 1 AND userID" + req.param.id, 
+	connection.query("SELECT cookie, password FROM user WHERE locked IS NOT 1 AND userID" + req.params.id, 
 	function (err, rows, fields) {
 		if (err) throw err;
 		
@@ -158,7 +180,7 @@ app.put('/account/:id', (req, res) => {
 
 	if (password_new !== "") s += ", password = \"" + hash + "\"";
 
-	connection.query("UPDATE user SET " + s + "WHERE userID = " + req.param.id, function (err, rows, fields) {
+	connection.query("UPDATE user SET " + s + "WHERE userID = " + req.params.id, function (err, rows, fields) {
 		if (err) throw err;
 		res.status(200).send();
 	});
@@ -169,7 +191,7 @@ app.delete('/account/:id', (req, res) => {
 	let stop = false;
 
 	//Check if the cookie and password are valid
-	connection.query("SELECT cookie, password FROM user WHERE locked IS NOT 1 AND userID" + req.param.id, 
+	connection.query("SELECT cookie, password FROM user WHERE locked IS NOT 1 AND userID" + req.params.id, 
 	function (err, rows, fields) {
 		if (err) throw err;
 		

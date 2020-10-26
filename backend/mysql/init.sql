@@ -22,16 +22,20 @@ USE `DBTeam3` ;
 -- Table `mydb`.`user`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `DBTeam3`.`user` (
-  `userID` INT NOT NULL,
+  `userID` INT NOT NULL AUTO_INCREMENT,
   `email` VARCHAR(45) NULL,
   `name` VARCHAR(45) NULL,
   `phone` VARCHAR(45) NULL,
   `country` VARCHAR(45) NULL,
   `type` VARCHAR(45) NULL,
   `password` VARCHAR(45) NULL,
-  `address` VARCHAR(45) NULL,
+  `addressLine1` VARCHAR(45) NULL,
+  `addressLine2` VARCHAR(45) NULL,
+  `state` VARCHAR(45) NULL,
   `cookie` VARCHAR(45) NULL,
+  `postalCode` VARCHAR(45) NULL,
   `sessionExpiration` DATETIME NULL,
+  `locked` BOOLEAN NOT NULL DEFAULT 0,
   PRIMARY KEY (`userID`))
 ENGINE = InnoDB;
 
