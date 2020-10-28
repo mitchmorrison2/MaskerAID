@@ -3,9 +3,9 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mysql = require('mysql');
 const crypto = require('crypto');
-const randstr = require("randomstring");
+const randstr = require('randomstring');
 const { log, ExpressAPILogMiddleware } = require('@rama41222/node-logger');
-
+  
 //Salt for password hashing
 const salt = "wtfThisIsn'tRandom";
 
@@ -15,7 +15,7 @@ var connection = mysql.createConnection({
   port: '3306',
   user: 'manager',
   password: 'Password',
-  database: 'db'
+  database: 'DBTeam3'
 });
 
 //set up some configs for express.
@@ -63,11 +63,11 @@ app.post('/login', (req, res) => {
 
 		id = rows[0].userID;
 	});
-
+  
 	if (stop) return;
 
 	//Generate a cookie
-	const cookie = id + ":" randstr.generate();
+	const cookie = id + ":" + randstr.generate();
 	connection.query("UPDATE user SET cookie = $(cookie), sessionExpiration = now() + INTERVAL 1 DAY WHERE email = $(req.body.email)", function (err, rows, fields) {
 		if (err) throw err;
 
@@ -83,7 +83,7 @@ app.post('/account', (req, res) => {
 	if (req.body.email === "" || req.body.password === "" || req.body.type === "") {
 		res.status(400).send();
 		stop = true;
-	});
+	}; 
 
 	if (stop) return;
 
@@ -162,7 +162,7 @@ app.put('/account/:id', (req, res) => {
 		if (err) throw err;
 		res.status(200).send();
 	});
-});
+}); 
 
 //DELETE /account/{accountID}
 app.delete('/account/:id', (req, res) => {
@@ -198,3 +198,4 @@ app.listen(config.port, config.host, (e) => {
   }
   logger.info(`${config.name} running on ${config.host}:${config.port}`);
 });
+ 
