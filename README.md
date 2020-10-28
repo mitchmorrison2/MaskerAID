@@ -1,7 +1,7 @@
 # DBGUI3
 
 
-## Connecting to mySQL database
+## Connecting to mySQL cloud database
 To connect your mySQL to the database:
 1. Go to mySQL, click on (+) to add a connection
 2. Create a name for the database (local)
