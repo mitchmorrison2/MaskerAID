@@ -1,5 +1,6 @@
 import React from 'react';
-import { Orders } from '../models/Orders';
+import { Order } from '../models/Order';
+import { User } from '../models/User';
 
 export class UserProfile extends React.Component{
 
