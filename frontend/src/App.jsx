@@ -1,6 +1,8 @@
 import React from 'react';
 import './App.css';
 import axios from 'axios';
+import {Login} from './pages/Login'
+import {Header} from './Header'
 
 class App extends React.Component {
 
@@ -54,42 +56,15 @@ class App extends React.Component {
   }
 
 
-  render(){/*
-    return (
-      <div className="App">
-        <header className="App-header">
-        <button onClick={this.reset}> Reset DB </button>
-          <form onSubmit={this.handleSubmit}>
-            <input type="text" value={this.state.number} onChange={this.handleChange}/>
-            <br/>
-            <input type="submit" value="Submit" />
-          </form>
-          <ul>
-            { this.state.values.map((value, i) => <li key={i}>{value.value}</li>) }
-          </ul>
-          <button className="test">Press this button</button>
-          
-        </header>
-      </div>*/
-      return (<div className="form-group col-md-6">
+  render() {
+    
+      return (
 
-          <h1 className="">MaskerAid</h1>
-          <label htmlFor="username">Username</label>
-          <input className="form-control" type="text" name="username" id="username"/>
-          <br/>
-          <label htmlFor="password">Password</label>
-          <input className="form-control" type="password" name="password" id="password"/>
-          <br/>
-          <label htmlFor="acct-type">Account type</label>
-          <select className="form-control" id="account-type">
-            <option></option>
-            <option>Distributor</option>
-            <option>Government</option>
-            <option>etc etc...</option>
-          </select>
-          <button className="btn btn-primary btn-block">Login</button>
-          <p>Don't have an account?</p>
+        <div className="">
+          <Header/>
+          <Login/>
         </div>
+        
     );
   }
 

@@ -1,0 +1,9 @@
+.page-header {
+    background-color: rgb(64,64,64);
+    padding: .4em;
+    color: white;
+}
+
+header {
+    margin-bottom: 2em;
+}
