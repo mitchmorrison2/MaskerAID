@@ -1,6 +1,13 @@
 import React from 'react';
 import { Orders } from '../models/Orders';
-
+import {
+    Grid,
+    Row,
+    Col,
+    FormGroup,
+    ControlLabel,
+    FormControl
+  } from "react-bootstrap";
 export class UserProfile extends React.Component{
 
     state = {

@@ -1,6 +1,8 @@
 export class Orders{
     constructor(transactionId, name, country, productId, quantity, userId, distributorId) {
-        //date DATETIME
+        //this.date = date;
+        //new date
+        this.date = new Date();
         this.transactionId = transactionId;
         this.name = name;
         this.country = country;
