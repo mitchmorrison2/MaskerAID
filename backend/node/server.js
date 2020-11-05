@@ -11,11 +11,11 @@ const salt = "wtfThisIsn'tRandom";
 
 //mysql connection
 var connection = mysql.createConnection({
-  host: 'backend-db',
+  host: 'lab-db.ca2edemxewbg.us-east-1.rds.amazonaws.com',
   port: '3306',
-  user: 'manager',
-  password: 'Password',
-  database: 'DBTeam3'
+  user: 'new_master_chris',
+  password: '', //Wouldn't you like to know!
+  database: 'maskeraid'
 });
 
 //set up some configs for express.
@@ -44,16 +44,125 @@ connection.connect(function (err) {
   logger.info("Connected to the DB!");
 });
 
-//GET /test
-app.get('/test', (req, res) => {
-	connection.query("DESCRIBE user", 
-	function (err, rows, fields) {
+
+
+//Password hash function
+const hash = pass => crypto.scryptSync(req.body.password, salt, 64);
+
+//Get the user ID from a session cookie
+const idFromCookie = cookie => cookie.substring(0, cookie.indexOf(":"));
+
+//Change a user password
+function setUserPassword(userID, pass, r ) {
+	connection.query(`UPDATE user SET password = ${hash(pass)} WHERE userID = ${userID} AND locked != 1`,
+	(err, rows, fields) => {
+		if (err) throw err;
+		else r();
+	});
+}
+
+//Verify username and password
+function verifyPassword( email, pass, r ) {
+	connection.query("SELECT userID, password FROM user WHERE locked IS NOT 1 AND email =" + email, 
+	(err, rows, fields) => {
 		if (err) throw err;
 
-		res.status(200).send(JSON.stringify(rows));
+		if (rows.length !== 1 || rows[0].password !== hash(req.body.password)) r(-1, false);
+		else r(rows[0].userID, true);
 	});
+};
 
-});
+//Generate a session cookie
+function generateCookie(id, r) {
+	const cookie = id + ":" + randstr.generate();
+	connection.query(`UPDATE user SET cookie = '${cookie}', sessionExpiration = now() + INTERVAL 1 DAY WHERE userID = ${id}`, function (err, rows, fields) {
+		if (err) throw err;
+		else r(cookie);
+	});
+};
+
+//Verify a session cookie
+function verifyCookie(cookie, r) {
+	connection.query(`SELECT userID FROM user WHERE locked IS NOT 1 AND sessionExpiration > now() AND cookie = ${cookie}`, 
+	(err, rows, fields) => {
+		if (rows.length !== 1) r(false);
+		else r(true);
+	});
+};
+
+//Update a user's account details
+function updateUserAccount(args, r) {
+	let id = idFromCookie(args.cookie);
+
+	const updateEmail = r => {
+		if (typeof args.email_new === "undefined") {
+			r();
+			return; 
+		}
+
+		connection.query(`UPDATE user SET email = ${args.email_new} WHERE userID = ${id} AND locked != 1`,
+		(err, rows, fields) => {
+			if (err) throw err;
+			else r();
+		});
+	};
+
+	const updatePassword = r => {
+		if (typeof args.password_new === "undefined") {
+			r();
+			return; 
+		}
+
+		setUserPassword(id, args.password_new, r);
+	};
+	
+	const updateName = r => {
+		if (typeof args.name === "undefined") {
+			r();
+			return; 
+		}
+
+		connection.query(`UPDATE user SET name = ${args.name} WHERE userID = ${id} AND locked != 1`,
+		(err, rows, fields) => {
+			if (err) throw err;
+			else r();
+		});
+	};
+
+	const updatePhone = r => {
+		if (typeof args.phone === "undefined") {
+			r();
+			return; 
+		}
+
+		connection.query(`UPDATE user SET phone = ${args.phone} WHERE userID = ${id} AND locked != 1`,
+		(err, rows, fields) => {
+			if (err) throw err;
+			else r();
+		});
+	};
+
+	const updateCountry = r => {
+		if (typeof args.country === "undefined") {
+			r();
+			return; 
+		}
+
+		connection.query(`UPDATE user SET country = ${args.country} WHERE userID = ${id} AND locked != 1`,
+		(err, rows, fields) => {
+			if (err) throw err;
+			else r();
+		});
+	};
+
+	updateEmail(
+		updatePassword(
+			updateName(
+				updatePhone(
+					updateCountry(
+	)))));
+
+};
 
 //GET /reset
 app.get('/command/:comm', (req, res) => {
@@ -66,34 +175,21 @@ app.get('/command/:comm', (req, res) => {
 
 });
 
-//POST /login
-app.post('/login', (req, res) => {
-	let id = 0;
-	let stop = false;
-	
-	//Check if the username and password are valid
-	connection.query("SELECT userID, password FROM user WHERE locked IS NOT 1 AND email = " + req.body.email, 
-	function (err, rows, fields) {
-		if (err) throw err;
-		
-		const hash = crypto.scryptSync(req.body.password, salt, 64);
-		if (rows.length === 0 || rows[0].password !== hash) {
-			res.status(401).send();
-			stop = true;
-			return;
-		}
-
-		id = rows[0].userID;
+app.get('/cookie/:id', (req, res) => {
+	//DO NOT forget to delete this before submitting
+	generateCookie(req.params.id, 
+	function (cookie) {
+		res.status(200).send(cookie);
 	});
 
-	if (stop) return;
+});
 
-	//Generate a cookie
-	const cookie = id + ":" + randstr.generate();
-	connection.query("UPDATE user SET cookie = $(cookie), sessionExpiration = now() + INTERVAL 1 DAY WHERE email = $(req.body.email)", function (err, rows, fields) {
-		if (err) throw err;
-
-		res.status(200).send(cookie);
+//POST /login
+app.post('/login', (req, res) => {
+	//Check if the username and password are valid
+	verifyPassword(req.body.email, req.body.password, (id, valid) => {
+		if (!valid) res.status(401).send();
+		else generateCookie(id, (cookie) => res.status(200).send(cookie));
 	});
 });
 
@@ -139,77 +235,50 @@ app.post('/account', (req, res) => {
 	
 });
 
+//PUT /account
+app.put('/account', (req, res) => {
+	//Check if the cookie is valid
+	verifyCookie(req.body.cookie, valid => {
+		if (!valid) res.status(401).send();
+		else {
+			//Check if the password is valid
+			verifyPassword(req.body.email, req.body.password, valid => {
+				if (!valid) res.status(401).send();
+				else {
+					//Update user account
+					updateUserAccount(req.body, success => {
+						if (!success) res.status(500).send();
+						else res.status(200).send();
+					});					
+				};
+			});
+		}
+		
+	});
+});
+
+//DELETE /account
+app.delete('/account', (req, res) => {
+	//Check if the cookie is valid
+	verifyCookie(req.body.cookie, valid => {
+		if (!valid) res.status(403).send();
+		else {
+			//Disable the user			
+			connection.query(`UPDATE user SET locked = 1 WHERE cookie = ${req.body.cookie}`,
+			(err, rows, fields) => {
+				if (err) throw err;
+				res.status(200).send();
+			});
+		}
+	});
+});
+
 //GET /account/{accountID}
 app.get('/account/:id', (req, res) => {
 	connection.query("SELECT email, type, name, phone, addressLine1, addressLine2, state, country, postalcode FROM user WHERE locked IS NOT 1 AND userID = " + req.params.id, function (err, rows, fields) {
 		if (err) throw err;
 		
 		res.status(200).send(JSON.stringify(rows));
-	});
-});
-
-//PUT /account/{accountID}
-app.put('/account/:id', (req, res) => {
-	let stop = false;	
-
-	//Check if the cookie and password are valid
-	connection.query("SELECT cookie, password FROM user WHERE locked IS NOT 1 AND userID" + req.params.id, 
-	function (err, rows, fields) {
-		if (err) throw err;
-		
-		const hash = crypto.scryptSync(req.body.password, salt, 64);
-		if (rows.length === 0 || rows[0].password !== hash || rows[0].cookie !== req.body.cookie) {
-			res.status(401).send();
-			stop = true;
-			return;
-		}
-	});
-
-	if (stop) return;
-
-	//Add the account info to the database
-	const hash = crypto.scryptSync(req.body.password_new, salt, 64); 
-	let s = "email = \"" + req.body.email + "\"," +
-		"name = \"" + req.body.name + "\"," +
-		"phone = \"" + req.body.phone + "\"," +
-		"addressLine1 = \"" + req.body.addressLine1 + "\"," +
-		"addressLine2 = \"" + req.body.addressLine2 + "\"," +
-		"territory = \"" + req.body.territory + "\"," +
-		"postalcode = \"" + req.body.postalcode + "\"," +
-		"country = \"" + req.body.country + "\"";
-
-	if (password_new !== "") s += ", password = \"" + hash + "\"";
-
-	connection.query("UPDATE user SET " + s + "WHERE userID = " + req.params.id, function (err, rows, fields) {
-		if (err) throw err;
-		res.status(200).send();
-	});
-});
-
-//DELETE /account/{accountID}
-app.delete('/account/:id', (req, res) => {
-	let stop = false;
-
-	//Check if the cookie and password are valid
-	connection.query("SELECT cookie, password FROM user WHERE locked IS NOT 1 AND userID" + req.params.id, 
-	function (err, rows, fields) {
-		if (err) throw err;
-		
-		const hash = crypto.scryptSync(req.body.password, salt, 64);
-		if (rows.length === 0 || rows[0].password !== hash || rows[0].cookie !== req.body.cookie) {
-			res.status(401).send();
-			stop = true;
-			return;
-		}
-	});
-
-	if (stop) return;
-
-	//Disable the user
-	connection.query("UPDATE user SET locked = 1 WHERE userID = $(req.body.cookie)",
-	function (err, rows, fields) {
-		if (err) throw err;
-		res.status(200).send();
 	});
 });
 
