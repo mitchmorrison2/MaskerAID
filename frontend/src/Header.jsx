@@ -7,7 +7,7 @@ export class Header extends React.Component {
 
         return(
 
-            <header className="">
+            <header>
                 <h1 className="page-header">MaskerAid</h1>
             </header>
 
