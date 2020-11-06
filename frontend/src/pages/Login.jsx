@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React from 'react';
 import { CreateAccount } from './CreateAccount';
 import './Login.css';
@@ -15,6 +16,14 @@ import './Login.css';
       password: "",
       accountType: "",
       creatingAccount: false
+
+    }
+
+    handleLogin = () => {
+
+      axios.post("lab-db.ca2edemxewbg.us-east-1.rds.amazonaws.com/login").then(
+        
+      )
 
     }
 
