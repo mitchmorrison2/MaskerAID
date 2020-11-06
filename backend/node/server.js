@@ -14,7 +14,7 @@ var connection = mysql.createConnection({
   host: 'lab-db.ca2edemxewbg.us-east-1.rds.amazonaws.com',
   port: '3306',
   user: 'new_master_chris',
-  password: '', //Wouldn't you like to know!
+  password: 'dontPutThisOnGithub', //Wouldn't you like to know!
   database: 'maskeraid'
 });
 
@@ -95,10 +95,7 @@ function updateUserAccount(args, r) {
 	let id = idFromCookie(args.cookie);
 
 	const updateEmail = r => {
-		if (typeof args.email_new === "undefined") {
-			r();
-			return; 
-		}
+		if (typeof args.email_new === "undefined") { r(); return; }
 
 		connection.query(`UPDATE user SET email = ${args.email_new} WHERE userID = ${id} AND locked != 1`,
 		(err, rows, fields) => {
@@ -108,19 +105,13 @@ function updateUserAccount(args, r) {
 	};
 
 	const updatePassword = r => {
-		if (typeof args.password_new === "undefined") {
-			r();
-			return; 
-		}
+		if (typeof args.password_new === "undefined") { r(); return; }
 
 		setUserPassword(id, args.password_new, r);
 	};
 	
 	const updateName = r => {
-		if (typeof args.name === "undefined") {
-			r();
-			return; 
-		}
+		if (typeof args.name === "undefined") { r(); return; }
 
 		connection.query(`UPDATE user SET name = ${args.name} WHERE userID = ${id} AND locked != 1`,
 		(err, rows, fields) => {
@@ -130,10 +121,7 @@ function updateUserAccount(args, r) {
 	};
 
 	const updatePhone = r => {
-		if (typeof args.phone === "undefined") {
-			r();
-			return; 
-		}
+		if (typeof args.phone === "undefined") { r(); return; }
 
 		connection.query(`UPDATE user SET phone = ${args.phone} WHERE userID = ${id} AND locked != 1`,
 		(err, rows, fields) => {
@@ -143,10 +131,7 @@ function updateUserAccount(args, r) {
 	};
 
 	const updateCountry = r => {
-		if (typeof args.country === "undefined") {
-			r();
-			return; 
-		}
+		if (typeof args.country === "undefined") { r(); return; }
 
 		connection.query(`UPDATE user SET country = ${args.country} WHERE userID = ${id} AND locked != 1`,
 		(err, rows, fields) => {
@@ -160,6 +145,7 @@ function updateUserAccount(args, r) {
 			updateName(
 				updatePhone(
 					updateCountry(
+						r()
 	)))));
 
 };
@@ -195,42 +181,31 @@ app.post('/login', (req, res) => {
 
 //POST /account
 app.post('/account', (req, res) => {
-	let stop = false;
+	
+	const empty = v => typeof v === "undefined" || v === "";
 
 	//Check if the email, password and type fields are not blank
-	if (req.body.email === "" || req.body.password === "" || req.body.type === "") {
+	if (empty(req.body.email) || empty(req.body.password) || empty(req.body.type)) {
 		res.status(400).send();
-		stop = true;
+		return;
 	};
-
-	if (stop) return;
 
 	//Check if the email is unique
 	connection.query("SELECT * FROM user WHERE email = $(req.body.email)", function (err, rows, fields) {
 		if (err) throw err;
-		if (rows.length >= 1) {
+		if (rows.length > 0) {
 			res.status(403).send();
-			stop = true;
-		} 
-	});
-
-	if (stop) return;
-
-	//Add the account info to the database
-	const hash = crypto.scryptSync(req.body.password, salt, 64);
-	const s = "\"" + req.body.email + "\"," +
-		"\"" + hash + "\"," +
-		"\"" + req.body.name + "\"," +
-		"\"" + req.body.type + "\"," +
-		"\"" + req.body.phone + "\"," +
-		"\"" + req.body.addressLine1 + "\"," +
-		"\"" + req.body.addressLine2 + "\"," +
-		"\"" + req.body.territory + "\"," +
-		"\"" + req.body.postalcode + "\"," +
-		"\"" + req.body.country + "\")";
-	connection.query("INSERT INTO user (email, password, name, type, phone, addressLine1, addressLine2, territory, postalcode, country) VALUES (" + s, function (err, rows, fields) {
-		if (err) throw err;
-		res.status(200).send();
+			return;
+		} else {
+			//Add the user
+			connection.query(`INSERT INTO user (email, password, type_typeID) VALUES 
+			('${req.body.email}', '${hash(req.body.password)}', 
+			(SELECT typeID FROM type WHERE typeName = ${req.body.type})}`, 
+			(err, rows, fields) => {
+				if (err) throw err;
+				else updateUserAccount(req.body, () => res.status(200).send(););
+			});
+		};
 	});
 	
 });
