@@ -14,7 +14,7 @@ var connection = mysql.createConnection({
   host: 'lab-db.ca2edemxewbg.us-east-1.rds.amazonaws.com',
   port: '3306',
   user: 'new_master_chris',
-  password: 'dontPutThisOnGithub', //Wouldn't you like to know!
+  password: '', //Wouldn't you like to know!
   database: 'maskeraid'
 });
 
