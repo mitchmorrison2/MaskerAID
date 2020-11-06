@@ -32,7 +32,7 @@ const app = express();
 const logger = log({ console: true, file: false, label: config.name });
 
 app.use(bodyParser.json());
-app.use(cors({
+app.use(cors({ 
   origin: '*'
 }));
 app.use(ExpressAPILogMiddleware(logger, { request: true }));
@@ -203,7 +203,7 @@ app.post('/account', (req, res) => {
 			(SELECT typeID FROM type WHERE typeName = ${req.body.type})}`, 
 			(err, rows, fields) => {
 				if (err) throw err;
-				else updateUserAccount(req.body, () => res.status(200).send(););
+				else updateUserAccount(req.body, () => res.status(200).send());
 			});
 		};
 	});
@@ -250,7 +250,7 @@ app.delete('/account', (req, res) => {
 
 //GET /account/{accountID}
 app.get('/account/:id', (req, res) => {
-	connection.query("SELECT email, type, name, phone, addressLine1, addressLine2, state, country, postalcode FROM user WHERE locked IS NOT 1 AND userID = " + req.params.id, function (err, rows, fields) {
+	connection.query(`SELECT email, typeName, name, phone, streetAddress, state, country, zip FROM user LEFT JOIN type ON user.type_typeID = type.typeID LEFT JOIN user_has_address ON user.userID = user_has_address.user_userID LEFT JOIN address ON user_has_address.address_id = address.id WHERE userID = ${req.param.id}`, function (err, rows, fields) {
 		if (err) throw err;
 		
 		res.status(200).send(JSON.stringify(rows));
