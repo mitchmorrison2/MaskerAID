@@ -257,6 +257,14 @@ app.get('/account/:id', (req, res) => {
 	});
 });
 
+//GET /account/{accountID}/inventory
+app.get('/account/:id/inventory', (req, res) => {
+	connection.query(`SELECT listing.* FROM user_has_listing INNER JOIN listing ON listing_listingID = listingID WHERE user_userID = ${req.params.id}`, (err, rows, fields) => {
+		if (err) throw err;
+		res.status(200).send(JSON.stringify(rows));
+	});
+});
+
 //GET /types
 app.get('/types', (req, res) => {
 	connection.query('SELECT * FROM type', (err, rows, fields) => {
@@ -264,6 +272,8 @@ app.get('/types', (req, res) => {
 		res.status(200).send(JSON.stringify(rows));
 	});
 });
+
+
 
 //connecting the express object to listen on a particular port as defined in the config object.
 app.listen(config.port, config.host, (e) => {
