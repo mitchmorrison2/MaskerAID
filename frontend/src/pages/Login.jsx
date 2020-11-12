@@ -31,8 +31,7 @@ import './Login.css';
     render() {
 
       return (
-      <div>
-        {!this.state.creatingAccount && <div className="container">
+        <div className="container">
           <label htmlFor="email">Email</label>
           <input className="form-control" 
             type="text" 
@@ -55,8 +54,6 @@ import './Login.css';
           <Link className="btn btn-link new-account" to="/create">
             Create Account
           </Link>
-          </div>}
-        {this.state.creatingAccount && <CreateAccount/>}
 
       </div>
     );
