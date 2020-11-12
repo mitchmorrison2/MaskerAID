@@ -6,6 +6,6 @@ export const Routes = [
     //update these to true for when actual accounts are being used
     { path: '/', component: Login, authRequired: false},
     { path: '/OrderHistory', component: OrderHistory, authRequired: false},
-    { path: '/CreateAccount', component: CreateAccount, authRequired: false},
+    { path: '/create', component: CreateAccount, authRequired: false},
     { path: '/UserProfile', component: UserProfile, authRequired: false}
 ];
