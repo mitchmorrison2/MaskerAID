@@ -239,7 +239,7 @@ app.delete('/account', (req, res) => {
 		if (!valid) res.status(403).send();
 		else {
 			//Disable the user			
-			connection.query(`UPDATE user SET locked = 1 WHERE cookie = ${req.body.cookie}`,
+			connection.query(`UPDATE user SET locked = 1 WHERE cookie = '${req.body.cookie}'`,
 			(err, rows, fields) => {
 				if (err) throw err;
 				res.status(200).send();
@@ -253,6 +253,14 @@ app.get('/account/:id', (req, res) => {
 	connection.query(`SELECT email, typeName, name, phone, streetAddress, state, country, zip FROM user LEFT JOIN type ON user.type_typeID = type.typeID LEFT JOIN user_has_address ON user.userID = user_has_address.user_userID LEFT JOIN address ON user_has_address.address_id = address.id WHERE userID = ${req.params.id} AND locked != 1`, function (err, rows, fields) {
 		if (err) throw err;
 		
+		res.status(200).send(JSON.stringify(rows));
+	});
+});
+
+//GET /types
+app.get('/types', (req, res) => {
+	connection.query('SELECT * FROM type', (err, rows, fields) => {
+		if (err) throw err;
 		res.status(200).send(JSON.stringify(rows));
 	});
 });
