@@ -21,8 +21,7 @@ export class OrderHistory extends React.Component{
             quantity: 250,
             userId: 1,
             distributorId: 1
-            }
-
+        }
     ]
 //cards for each individual order  
     render() {

@@ -1,6 +1,5 @@
 import React from 'react';
 import { User } from '../models/User';
-import styled, {css} from 'styled-components';
 import './UserProfile.css';
 
 
@@ -42,7 +41,6 @@ export class UserProfile extends React.Component{
             <div>
             <span></span>
             <h1>{this.users[0].name}</h1>
-            <img src={katherine} transform height ="350" width="350"/>
             </div>
             <div className="form-group">
                 <p>Name: {this.users[0].name}</p>
