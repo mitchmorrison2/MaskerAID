@@ -31,16 +31,25 @@ export class OrderHistory extends React.Component{
         return (
             <div>
                 <h1>Order History</h1>
-            <li><div className="container" 
+            <li><div class="card" 
             style={{
                 width: "500%",
                 border: "solid 3px #d3d3d3",
                 margin: "10px auto"
                 }}>
-                    <p>Order ID: <strong>{this.orders[0].id}</strong></p>
-                    <p>Product: <strong>{this.orders[0].name}</strong></p>
-                    <p> Country: {this.orders[0].country}</p>
-                    <p> Product ID: {this.orders[0].productId}</p>
+                    
+                <div data-role="page" class="pages" >
+                {this.orders.map((order, index) => (
+          <div key={index}>
+            <h1>Product: {order.name} {order.productId}</h1>
+            <p>Country: {order.country}</p>
+            <p>Quantity: {order.quantity}</p>
+            <p>Distributor ID: {order.distributorId}</p>
+          </div>
+        ))}
+                  
+                    </div>
+                    
 
         </div>
         </li>
