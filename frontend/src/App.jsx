@@ -4,6 +4,8 @@ import axios from 'axios';
 import {Login} from './pages/Login'
 import {Header} from './Header'
 import { Routes } from './Routes';
+import { UserProfile } from './pages/UserProfile';
+import { OrderHistory } from './pages/OrderHistory';
 
 class App extends React.Component {
 

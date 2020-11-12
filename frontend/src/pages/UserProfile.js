@@ -54,7 +54,6 @@ export class UserProfile extends React.Component{
                 <h2> Personal Information </h2>
                 <p>Email: {this.users[0].email}</p>
                 <p>Phone: {this.users[0].phone} </p>
-                <p>Hospital Address: 'will add later'</p>
                 <p>Country: {this.users[0].country}</p>
                 <p>Password: ******** </p>
             </div>

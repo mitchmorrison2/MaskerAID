@@ -1,6 +1,9 @@
 import React from 'react';
 import { User } from '../models/User';
 import { Orders } from '../models/Orders';
+import axios from 'axios';
+import './OrderHistory.css';
+
 export class OrderHistory extends React.Component{
 //pulls up any orders that the user has made
     orders = [
@@ -26,19 +29,24 @@ export class OrderHistory extends React.Component{
 //cards for each individual order  
     render() {
         return (
+            <div>
+                <h1>Order History</h1>
             <li><div className="container" 
             style={{
-                width: "50%",
+                width: "500%",
                 border: "solid 3px #d3d3d3",
                 margin: "10px auto"
                 }}>
-                    <p>Order ID: <strong>{this.order.id}</strong></p>
-                    <p>Product: <strong>{this.orders.name}</strong></p>
-                    <p> Country: {this.orders.country}</p>
-                    <p> Product ID: {this.orders.productId}</p>
+                    <p>Order ID: <strong>{this.orders[0].id}</strong></p>
+                    <p>Product: <strong>{this.orders[0].name}</strong></p>
+                    <p> Country: {this.orders[0].country}</p>
+                    <p> Product ID: {this.orders[0].productId}</p>
 
         </div>
         </li>
+       <p>Return</p>
+        </div>
+        
         )}
 
 }
