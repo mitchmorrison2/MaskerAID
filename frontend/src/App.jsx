@@ -1,6 +1,10 @@
 import React from 'react';
 import './App.css';
 import axios from 'axios';
+import {Login} from './pages/Login'
+import {Header} from './Header'
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { ROUTES } from './Routes';
 
 class App extends React.Component {
 
@@ -23,7 +27,7 @@ class App extends React.Component {
   handleSubmit = (e) => {
     e.preventDefault();
     let prod = this.state.number * this.state.number;
-    axios.post('http://localhost:8000/multplynumber', {product: prod}).then(res => {
+    axios.post('http://localhost:8000/multplynumber', {product: prod}).then(res =>{
       console.log(res);
       this.fetchVals();
     });
@@ -54,21 +58,18 @@ class App extends React.Component {
   }
 
 
-  render(){
-    return (
-      <div className="App">
-        <header className="App-header">
-        <button onClick={this.reset}> Reset DB </button>
-          <form onSubmit={this.handleSubmit}>
-            <input type="text" value={this.state.number} onChange={this.handleChange}/>
-            <br/>
-            <input type="submit" value="Submit" />
-          </form>
-          <ul>
-            { this.state.values.map((value, i) => <li key={i}>{value.value}</li>) }
-          </ul>
-        </header>
-      </div>
+  render() {
+    
+      return (
+        <div>
+          <Header/>
+          <Router>
+            <Switch>
+              {ROUTES.map((route, index) => <Route key={ index } { ...route }></Route>)}
+            </Switch>
+          </Router>
+        </div>
+        
     );
   }
 

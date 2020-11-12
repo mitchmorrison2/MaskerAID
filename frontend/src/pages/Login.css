@@ -1,0 +1,12 @@
+.btn.btn-primary.btn-block {
+    margin: 1em 0em 1em;
+}
+
+.form-control {
+    margin-bottom: 1em;
+}
+
+.btn.btn-link.new-account {
+    padding: 0em;
+    margin: 0em;
+}
