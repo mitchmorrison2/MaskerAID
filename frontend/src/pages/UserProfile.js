@@ -1,17 +1,9 @@
 import React from 'react';
 import { User } from '../models/User';
-import katherine from '../katherine.jpg';
 import { NavigationBar } from '../models/NavigationBar';
 import styled, {css} from 'styled-components';
 import './UserProfile.css';
-import logo from '../logo192.png';
-const GridWrapper = styled.div`
-  display: grid;
-  text-align: center;
-  background-image: linear-gradient(#afeeee, white);
-  grid-template-columns: repeat(12, 1fr);
-  grid-auto-rows: minmax(25px, auto);
-`;
+
 
 
 
@@ -48,28 +40,7 @@ export class UserProfile extends React.Component{
 
     render() {
         return (<form className="container">
-            
-            <GridWrapper>
-                <div class="navigation-bar">
-                
-                    <div id="navigation-container">
-                        <ul id="nav">
-                        <li class="pull-left"><img class = "logo" src= {logo} ></img></li>
-                        <li class="pull-left"><a href="#">Home</a></li>
-                        <li class="pull-left"><a href="#">Listings</a></li>
-                        <li class="pull-left"><a href="#">Orders</a></li>
-                        <li class="pull-left"><a href="#" id = "logOutButton"class="btn btn-info btn-lg">
-                        <span class="glyphicon glyphicon-log-out" className="logout" ></span> Log out
-                    </a></li>
-                        </ul>
-                    </div>
-                    <header>
-                    
-                </header>
-                </div>
-            </GridWrapper>
             <div>
-                
             <span></span>
             <h1>{this.users[0].name}</h1>
             <img src={katherine} transform height ="350" width="350"/>
