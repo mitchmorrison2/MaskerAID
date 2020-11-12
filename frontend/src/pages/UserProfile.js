@@ -1,6 +1,5 @@
 import React from 'react';
 import { User } from '../models/User';
-import { NavigationBar } from '../models/NavigationBar';
 import styled, {css} from 'styled-components';
 import './UserProfile.css';
 

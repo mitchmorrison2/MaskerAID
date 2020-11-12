@@ -13,10 +13,18 @@ export class OrderHistory extends React.Component{
         quantity: 500,
         userId: 1,
         distributorId: 1
-        }
+        },
+        {id: 2,
+            name: "Gloves",
+            country: "UK",
+            productId: "3",
+            quantity: 250,
+            userId: 1,
+            distributorId: 1
+            }
 
     ]
-//cards for each individual order    https://codesandbox.io/s/reusable-card-component-n2ifm?from-embed=&file=/src/App.js
+//cards for each individual order  
     render() {
         return (
             <li><div className="container" 
