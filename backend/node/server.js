@@ -83,8 +83,9 @@ function generateCookie(id, r) {
 
 //Verify a session cookie
 function verifyCookie(cookie, r) {
-	connection.query(`SELECT userID FROM user WHERE locked IS NOT 1 AND sessionExpiration > now() AND cookie = ${cookie}`, 
+	connection.query(`SELECT userID FROM user WHERE locked != 1 AND sessionExpiration > now() AND cookie = '${cookie}'`, 
 	(err, rows, fields) => {
+		if (err) throw err;
 		if (rows.length !== 1) r(false);
 		else r(true);
 	});
@@ -214,16 +215,15 @@ app.post('/account', (req, res) => {
 app.put('/account', (req, res) => {
 	//Check if the cookie is valid
 	verifyCookie(req.body.cookie, valid => {
-		if (!valid) res.status(401).send();
+		if (!valid) res.status(401).send("invalid_cookie");
 		else {
 			//Check if the password is valid
 			verifyPassword(req.body.email, req.body.password, valid => {
-				if (!valid) res.status(401).send();
+				if (!valid) res.status(401).send("invalid_password");
 				else {
 					//Update user account
-					updateUserAccount(req.body, success => {
-						if (!success) res.status(500).send();
-						else res.status(200).send();
+					updateUserAccount(idFromCookie(req.body.cookie), req.body, () => {
+						res.status(200).send("done");
 					});					
 				};
 			});
