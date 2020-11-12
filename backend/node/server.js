@@ -265,6 +265,25 @@ app.get('/account/:id/inventory', (req, res) => {
 	});
 });
 
+//GET /orders
+app.get('/orders', (req, res) => {
+	verifyCookie(req.body.cookie, valid => {
+		if (!valid) {
+			res.status(403).send("invalid_cookie");
+			return;
+		};
+
+		connection.query(`SELECT * FROM orders WHERE user_userID = ${idFromCookie(req.body.cookie)}`, 
+		(err, rows, fields) => {
+			if (err) throw err; 
+			else res.status(200).send(JSON.stringify(rows));
+		});
+	});
+});
+
+//GET /orders/{orderID}
+
+
 //GET /types
 app.get('/types', (req, res) => {
 	connection.query('SELECT * FROM type', (err, rows, fields) => {
