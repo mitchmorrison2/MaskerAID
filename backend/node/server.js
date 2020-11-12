@@ -47,14 +47,14 @@ connection.connect(function (err) {
 
 
 //Password hash function
-const hash = pass => crypto.scryptSync(req.body.password, salt, 64);
+const hash = pass => crypto.scryptSync(pass, salt, 64).toString('hex');
 
 //Get the user ID from a session cookie
 const idFromCookie = cookie => cookie.substring(0, cookie.indexOf(":"));
 
 //Change a user password
 function setUserPassword(userID, pass, r ) {
-	connection.query(`UPDATE user SET password = ${hash(pass)} WHERE userID = ${userID} AND locked != 1`,
+	connection.query(`UPDATE user SET password = '${hash(pass)}' WHERE userID = ${userID} AND locked != 1`,
 	(err, rows, fields) => {
 		if (err) throw err;
 		else r();
@@ -91,62 +91,56 @@ function verifyCookie(cookie, r) {
 };
 
 //Update a user's account details
-function updateUserAccount(args, r) {
-	let id = idFromCookie(args.cookie);
+function updateUserAccount(id, args, r) {
+	const updateEmail = () => {
+		if (typeof args.email_new === "undefined") return;
 
-	const updateEmail = r => {
-		if (typeof args.email_new === "undefined") { r(); return; }
-
-		connection.query(`UPDATE user SET email = ${args.email_new} WHERE userID = ${id} AND locked != 1`,
+		connection.query(`UPDATE user SET email = '${args.email_new}' WHERE userID = ${id} AND locked != 1`,
 		(err, rows, fields) => {
-			if (err) throw err;
-			else r();
+			if (err) throw err;;
 		});
 	};
 
-	const updatePassword = r => {
-		if (typeof args.password_new === "undefined") { r(); return; }
+	const updatePassword = () => {
+		if (typeof args.password_new === "undefined") return;
 
-		setUserPassword(id, args.password_new, r);
+		setUserPassword(id, args.password_new, () => {});
 	};
 	
-	const updateName = r => {
-		if (typeof args.name === "undefined") { r(); return; }
-
-		connection.query(`UPDATE user SET name = ${args.name} WHERE userID = ${id} AND locked != 1`,
+	const updateName = () => {
+		if (typeof args.name === "undefined") return;
+		
+		connection.query(`UPDATE user SET name = '${args.name}' WHERE userID = ${id} AND locked != 1`,
 		(err, rows, fields) => {
 			if (err) throw err;
-			else r();
+			console.log("name updated");
 		});
 	};
 
-	const updatePhone = r => {
-		if (typeof args.phone === "undefined") { r(); return; }
+	const updatePhone = () => {
+		if (typeof args.phone === "undefined") return;
 
-		connection.query(`UPDATE user SET phone = ${args.phone} WHERE userID = ${id} AND locked != 1`,
+		connection.query(`UPDATE user SET phone = '${args.phone}' WHERE userID = ${id} AND locked != 1`,
 		(err, rows, fields) => {
 			if (err) throw err;
-			else r();
 		});
 	};
 
-	const updateCountry = r => {
-		if (typeof args.country === "undefined") { r(); return; }
+	const updateCountry = () => {
+		if (typeof args.country === "undefined") { return; }
 
-		connection.query(`UPDATE user SET country = ${args.country} WHERE userID = ${id} AND locked != 1`,
+		connection.query(`UPDATE user SET country = '${args.country}' WHERE userID = ${id} AND locked != 1`,
 		(err, rows, fields) => {
 			if (err) throw err;
-			else r();
 		});
 	};
 
-	updateEmail(
-		updatePassword(
-			updateName(
-				updatePhone(
-					updateCountry(
-						r()
-	)))));
+	updateEmail();
+	updatePassword();
+	updateName();
+	updatePhone();
+	updateCountry();
+	r();
 
 };
 
@@ -161,13 +155,9 @@ app.get('/command/:comm', (req, res) => {
 
 });
 
-app.get('/cookie/:id', (req, res) => {
+app.post('/test', (req, res) => {
 	//DO NOT forget to delete this before submitting
-	generateCookie(req.params.id, 
-	function (cookie) {
-		res.status(200).send(cookie);
-	});
-
+	res.status(200).send(req.body);
 });
 
 //POST /login
@@ -182,28 +172,38 @@ app.post('/login', (req, res) => {
 //POST /account
 app.post('/account', (req, res) => {
 	
+	console.log(req.body);
+
 	const empty = v => typeof v === "undefined" || v === "";
 
 	//Check if the email, password and type fields are not blank
 	if (empty(req.body.email) || empty(req.body.password) || empty(req.body.type)) {
 		res.status(400).send();
 		return;
+	} else if (Number(req.body.type) > 3 || Number(req.body.type) < 1) {
+		res.status(400).send("invalid_type");
+		return;
 	};
 
 	//Check if the email is unique
-	connection.query("SELECT * FROM user WHERE email = $(req.body.email)", function (err, rows, fields) {
+	connection.query(`SELECT * FROM user WHERE email = '${req.body.email}'`, function (err, rows, fields) {
 		if (err) throw err;
 		if (rows.length > 0) {
-			res.status(403).send();
+			res.status(403).send("email_registered");
 			return;
 		} else {
 			//Add the user
-			connection.query(`INSERT INTO user (email, password, type_typeID) VALUES 
-			('${req.body.email}', '${hash(req.body.password)}', 
-			(SELECT typeID FROM type WHERE typeName = ${req.body.type})}`, 
+			connection.query(`INSERT INTO user (email, password, type_typeID) VALUES ('${req.body.email}', '${hash(req.body.password)}', ${Number(req.body.type)})`, 
 			(err, rows, fields) => {
 				if (err) throw err;
-				else updateUserAccount(req.body, () => res.status(200).send());
+				else {
+					connection.query(`SELECT userID FROM user WHERE email = '${req.body.email}'`, (err, rows, fields) => {
+						if (err) throw err;
+						console.log(rows[0].userID);
+						updateUserAccount(rows[0].userID, req.body, () => res.status(200).send("success"));
+					});
+
+				}
 			});
 		};
 	});
@@ -250,7 +250,7 @@ app.delete('/account', (req, res) => {
 
 //GET /account/{accountID}
 app.get('/account/:id', (req, res) => {
-	connection.query(`SELECT email, typeName, name, phone, streetAddress, state, country, zip FROM user LEFT JOIN type ON user.type_typeID = type.typeID LEFT JOIN user_has_address ON user.userID = user_has_address.user_userID LEFT JOIN address ON user_has_address.address_id = address.id WHERE userID = ${req.params.id}`, function (err, rows, fields) {
+	connection.query(`SELECT email, typeName, name, phone, streetAddress, state, country, zip FROM user LEFT JOIN type ON user.type_typeID = type.typeID LEFT JOIN user_has_address ON user.userID = user_has_address.user_userID LEFT JOIN address ON user_has_address.address_id = address.id WHERE userID = ${req.params.id} AND locked != 1`, function (err, rows, fields) {
 		if (err) throw err;
 		
 		res.status(200).send(JSON.stringify(rows));
