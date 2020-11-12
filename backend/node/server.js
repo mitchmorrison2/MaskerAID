@@ -282,7 +282,13 @@ app.get('/orders', (req, res) => {
 });
 
 //GET /orders/{orderID}
-
+app.get('/orders/:id', (req, res) => {
+	connection.query(`SELECT * FROM orders WHERE transID = ${req.params.id}`, 
+	(err, rows, fields) => {
+		if (err) throw err;
+		res.status(200).send(JSON.stringify(rows));
+	});
+});
 
 //GET /types
 app.get('/types', (req, res) => {
