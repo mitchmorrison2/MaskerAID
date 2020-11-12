@@ -47,7 +47,7 @@ connection.connect(function (err) {
 
 
 //Password hash function
-const hash = pass => crypto.scryptSync(pass, salt, 64).toString('hex');
+const hash = pass => crypto.scryptSync(pass, salt, 64).toString('hex').substring(0,45);
 
 //Get the user ID from a session cookie
 const idFromCookie = cookie => cookie.substring(0, cookie.indexOf(":"));
@@ -63,11 +63,11 @@ function setUserPassword(userID, pass, r ) {
 
 //Verify username and password
 function verifyPassword( email, pass, r ) {
-	connection.query("SELECT userID, password FROM user WHERE locked IS NOT 1 AND email =" + email, 
+	connection.query(`SELECT userID, password FROM user WHERE locked != 1 AND email = "${email}"`, 
 	(err, rows, fields) => {
 		if (err) throw err;
 
-		if (rows.length !== 1 || rows[0].password !== hash(req.body.password)) r(-1, false);
+		if (rows.length !== 1 || rows[0].password !== hash(pass)) r(-1, false);
 		else r(rows[0].userID, true);
 	});
 };
@@ -164,7 +164,7 @@ app.post('/test', (req, res) => {
 app.post('/login', (req, res) => {
 	//Check if the username and password are valid
 	verifyPassword(req.body.email, req.body.password, (id, valid) => {
-		if (!valid) res.status(401).send();
+		if (!valid) res.status(401).send("invalid");
 		else generateCookie(id, (cookie) => res.status(200).send(cookie));
 	});
 });
