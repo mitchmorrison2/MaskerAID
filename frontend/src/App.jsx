@@ -3,6 +3,8 @@ import './App.css';
 import axios from 'axios';
 import {Login} from './pages/Login'
 import {Header} from './Header'
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { ROUTES } from './Routes';
 
 class App extends React.Component {
 
@@ -59,10 +61,13 @@ class App extends React.Component {
   render() {
     
       return (
-
-        <div className="">
+        <div>
           <Header/>
-          <Login/>
+          <Router>
+            <Switch>
+              {ROUTES.map((route, index) => <Route key={ index } { ...route }></Route>)}
+            </Switch>
+          </Router>
         </div>
         
     );
