@@ -5,4 +5,4 @@ FROM node:14
 WORKDIR /usr/src/app
 
 # expose port 8000
-EXPOSE 3000
+EXPOSE 3000 
