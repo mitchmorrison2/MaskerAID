@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export class repository {
-    url = "";   //put ec2 instance here
+    url = "http://ec2-34-214-157-239.us-west-2.compute.amazonaws.com:3000/";   //put ec2 instance here
 
     config = {
         headers: {
@@ -11,9 +11,10 @@ export class repository {
 
 
     //Account stuff    path = /account
+    //POST /account on DB side
     addAccount(email, password){
         return new Promise((resolve, reject) => {
-            axios.post(`${this.url}/user/account`, {email: email, password: password}, this.config).then(resp => {
+            axios.post(`${this.url}/account`, {email: email, password: password}, this.config).then(resp => {
                 if(resp.data == "L")
                 {
                     return alert("Email already in use");
@@ -24,11 +25,17 @@ export class repository {
             }).catch(err => alert(err));
         });
     }
-
+    //logging in 
     login(email, password){
         return new Promise((resolve, reject) => {
             axios.post(`${this.url}/login`, {email: email, password: password})
         })
+    }
+
+    //deleting account - app.delete
+    deleteAccount(){
+        return new Promise((resolve, rejecct) =>
+        axios.delete(`${this.url}/account`))
     }
 
 }//end repository
