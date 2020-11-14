@@ -3,6 +3,7 @@ import React from 'react';
 import { CreateAccount } from './CreateAccount';
 import {Link} from 'react-router-dom';
 import './Login.css';
+import {repository} from '../api/repository';
 
 /********************
  * Standard Login Page
@@ -10,6 +11,8 @@ import './Login.css';
  ********************/
 
  export class Login extends React.Component {
+
+    repo = new repository();
 
     state = {
 
@@ -22,9 +25,7 @@ import './Login.css';
 
     handleLogin = () => {
 
-      axios.post("lab-db.ca2edemxewbg.us-east-1.rds.amazonaws.com/login").then(
-
-      )
+      this.repo.login(this.state.email, this.state.password);
 
     }
 
@@ -32,7 +33,8 @@ import './Login.css';
 
       return (
       <div>
-        {!this.state.creatingAccount && <div className="container">
+        <div className="container">
+          <h3>Login</h3>
           <label htmlFor="email">Email</label>
           <input className="form-control" 
             type="text" 
@@ -50,13 +52,12 @@ import './Login.css';
             onChange={e => this.setState({password: e.target.value})}
           />
           <div className="alert alert-danger" role="alert">Sample error -- for user doesnt exist or wrong password</div>
-          <button className="btn btn-primary btn-block">Login</button>
+          <button className="btn btn-primary btn-block" onClick={this.handleLogin}>Login</button>
           <span>Don't have an account? </span>
-          <Link className="btn btn-link new-account" to="/create">
+          <Link className="btn btn-link text-link" to="/create">
             Create Account
           </Link>
-          </div>}
-        {this.state.creatingAccount && <CreateAccount/>}
+        </div>
 
       </div>
     );
