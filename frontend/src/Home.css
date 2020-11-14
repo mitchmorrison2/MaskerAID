@@ -1,0 +1,20 @@
+.topButtons{
+    float:right;
+    height: 40px;
+    width: 100px;
+}
+
+.Container{
+    height: 60em;
+    background-color: aquamarine;
+}
+
+
+.ProductDisplay{
+    float:bottom;
+}
+
+.Image{
+    height:6em;
+    width:200px;
+}
