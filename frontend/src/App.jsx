@@ -5,6 +5,8 @@ import {Login} from './pages/Login'
 import {Header} from './Header'
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { ROUTES } from './Routes';
+import { CreateAccount } from './pages/CreateAccount';
+import { OrderHistory } from './pages/OrderHistory';
 
 class App extends React.Component {
 
@@ -12,7 +14,8 @@ class App extends React.Component {
     super(props);
     this.state = {
       number: "",
-      values: []
+      values: [],
+      loggedIn: false
     };
     // this.handleChange = this.handleChange.bind(this);
     // this.handleSubmit = this.handleSubmit.bind(this);
@@ -57,15 +60,27 @@ class App extends React.Component {
     });
   }
 
+  onLogin = () => {
+    this.setState({loggedIn: true});
+  }
+
 
   render() {
     
       return (
         <div>
-          <Header/>
+          <Header loggedIn={this.state.loggedIn}/>
           <Router>
             <Switch>
-              {ROUTES.map((route, index) => <Route key={ index } { ...route }></Route>)}
+              <Route path="/create">
+                <CreateAccount/>
+              </Route>
+              <Route path="/orders">
+                <OrderHistory/>
+              </Route>
+              <Route path="/">
+                <Login onLogin={this.onLogin}/>
+              </Route>
             </Switch>
           </Router>
         </div>

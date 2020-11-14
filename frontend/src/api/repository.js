@@ -11,9 +11,10 @@ export class repository {
 
 
     //Account stuff    path = /account
+    //POST /account on DB side
     addAccount(email, password){
         return new Promise((resolve, reject) => {
-            axios.post(`${this.url}/user/account`, {email: email, password: password}, this.config).then(resp => {
+            axios.post(`${this.url}/account`, {email: email, password: password}, this.config).then(resp => {
                 if(resp.data == "L")
                 {
                     return alert("Email already in use");
@@ -24,7 +25,7 @@ export class repository {
             }).catch(err => alert(err));
         });
     }
-
+    //logging in 
     login(email, password){
         return new Promise((resolve, reject) => {
             axios.post(`${this.url}/login`, {email: email, password: password})
@@ -35,6 +36,24 @@ export class repository {
         .catch(e => {
             console.log(e);
         });
+    }
+
+    getAccount(id) {
+        return new Promise((resolve, reject) => {
+            axios.get(`${this.url}/login/${id}`)
+        })
+        .then(response => {
+            console.log(response);
+        })
+        .catch(e => {
+            console.log(e);
+        });
+    }
+
+    //deleting account - app.delete
+    deleteAccount(){
+        return new Promise((resolve, rejecct) =>
+        axios.delete(`${this.url}/account`))
     }
 
 }//end repository

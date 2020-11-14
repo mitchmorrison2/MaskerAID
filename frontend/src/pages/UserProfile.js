@@ -42,9 +42,13 @@ export class UserProfile extends React.Component{
                 
             </div>
 
-            <PhoneList phoneNumbers={ this.state.phoneNumbers } />
-            <PhoneEditor onPhoneAdded={ phone => this.addPhone(phone) } />
+            
             
         </form>;
     }//end render
 }//end userProfile class
+
+/*
+<PhoneList phoneNumbers={ this.state.phoneNumbers } />
+            <PhoneEditor onPhoneAdded={ phone => this.addPhone(phone) } />
+*/

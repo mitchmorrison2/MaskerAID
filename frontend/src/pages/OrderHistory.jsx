@@ -3,9 +3,11 @@ import { User } from '../models/User';
 import { Orders } from '../models/Orders';
 import axios from 'axios';
 import './OrderHistory.css';
+import { useHistory, withRouter, Link } from 'react-router-dom';
 
 export class OrderHistory extends React.Component{
 //pulls up any orders that the user has made
+
     orders = [
         //dummy data until we pull actual data from api
         //transactionId, name, country, productId, quantity, userId, distributorId
@@ -26,6 +28,7 @@ export class OrderHistory extends React.Component{
             distributorId: 1
         }
     ]
+    
 //cards for each individual order  
     render() {
         return (
@@ -48,12 +51,13 @@ export class OrderHistory extends React.Component{
           </div>
         ))}
                   
-                    </div>
-                    
-
+       </div>
         </div>
         </li>
-       <p>Return</p>
+        <span>Go back </span>
+          <Link className="btn btn-link back-button" to="/home">
+             Back
+          </Link>
         </div>
         
         )}
