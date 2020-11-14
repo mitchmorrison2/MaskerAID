@@ -83,6 +83,11 @@ function generateCookie(id, r) {
 
 //Verify a session cookie
 function verifyCookie(cookie, r) {
+	if (typeof cookie === "undefined" || cookie === "") {
+		r(false);
+		return;
+	};
+
 	connection.query(`SELECT userID FROM user WHERE locked != 1 AND sessionExpiration > now() AND cookie = '${cookie}'`, 
 	(err, rows, fields) => {
 		if (err) throw err;
@@ -141,11 +146,52 @@ function updateUserAccount(id, args, r) {
 	updateName();
 	updatePhone();
 	updateCountry();
+	updateUserAddress(id, args, r);
+
+};
+
+function updateUserAddress(id, args, r) {
+	
+	const empty = v => typeof v === "undefined" || v === "";
+	const isNum = v => !isNaN(Number(v));
+
+	let fields = "";
+	let vals = "";
+
+	if (!empty(args.streetAddress)) {
+		fields = fields + ", streetAddress";
+		vals = vals + ", " + args.streetAddress;
+	}
+	if (!empty(args.city)) {
+		fields = fields + ", city";
+		vals = vals + ", " + args.city;
+	}
+	if (!empty(args.state)) {
+		fields = fields + ", state";
+		vals = vals + ", " + args.state;
+	}
+	if (isNum(args.zip)) {
+		fields = fields + ", zip";
+		vals = vals + ", " + args.zip.toString();
+	}
+
+	if (fields === "") {
+		r();
+		return;
+	};
+
+	fields = "user_userID" + fields;
+	vals = id.toString() + vals;
+
+	connecion.query(`INSERT INTO address (${fields}) VALUES (${vals})`,
+	(err, rows, fields) => {
+		if (err) throw err;
+	});
+
 	r();
 
 };
 
-//GET /reset
 app.get('/command/:comm', (req, res) => {
 	//DO NOT forget to delete this before submitting
 	connection.query(req.params.comm, 
@@ -154,11 +200,6 @@ app.get('/command/:comm', (req, res) => {
 		else res.status(200).send(JSON.stringify(rows));
 	});
 
-});
-
-app.post('/test', (req, res) => {
-	//DO NOT forget to delete this before submitting
-	res.status(200).send(req.body);
 });
 
 //POST /login
@@ -250,7 +291,7 @@ app.delete('/account', (req, res) => {
 
 //GET /account/{accountID}
 app.get('/account/:id', (req, res) => {
-	connection.query(`SELECT email, typeName, name, phone, streetAddress, state, country, zip FROM user LEFT JOIN type ON user.type_typeID = type.typeID LEFT JOIN user_has_address ON user.userID = user_has_address.user_userID LEFT JOIN address ON user_has_address.address_id = address.id WHERE userID = ${req.params.id} AND locked != 1`, function (err, rows, fields) {
+	connection.query(`SELECT email, typeName, name, phone, streetAddress, state, country, zip FROM user LEFT JOIN type ON user.type_typeID = type.typeID LEFT JOIN address ON user.userID = address.user_userID WHERE userID = ${req.params.id} AND locked != 1`, function (err, rows, fields) {
 		if (err) throw err;
 		
 		res.status(200).send(JSON.stringify(rows));
@@ -259,7 +300,7 @@ app.get('/account/:id', (req, res) => {
 
 //GET /account/{accountID}/inventory
 app.get('/account/:id/inventory', (req, res) => {
-	connection.query(`SELECT listing.* FROM user_has_listing INNER JOIN listing ON listing_listingID = listingID WHERE user_userID = ${req.params.id}`, (err, rows, fields) => {
+	connection.query(`SELECT * FROM listing WHERE user_userID = ${req.params.id}`, (err, rows, fields) => {
 		if (err) throw err;
 		res.status(200).send(JSON.stringify(rows));
 	});
@@ -290,6 +331,156 @@ app.get('/orders/:id', (req, res) => {
 	});
 });
 
+//PUT /orders/{orderID}
+app.put('/orders/:id', (req, res) => {
+	const empty = v => typeof v === "undefined" || v === "";
+
+	if (empty(req.body.stats) || isNaN(Number(req.params.id))) {
+		res.status(400).send();
+		return;
+	}
+
+	verifyCookie(req.body.cookie, valid => {
+		if (!valid) {
+			res.status(403).send("invalid_cookie");
+			return;
+		};
+
+		let id = idFromCookie(req.body.cookie);
+
+		connection.query(`UPDATE orders SET orderStatus = '${req.body.status}' WHERE (transID = ${req.params.id}) AND (buyerID = ${req.params.id} OR sellerID = ${req.params.id})`,
+		(err, rows, fields) => {
+			if (err) throw err; 
+			else res.status(200).send(JSON.stringify(rows));
+		});
+	});
+});
+
+//GET /listings
+app.get('/listings', (req, res) => {
+	const empty = v => typeof v === "undefined" || v === "";
+	const isNum = v => !isNaN(Number(v));
+
+	let where = false;
+	let query = 'SELECT listingID, email, productID, price, quantity FROM listing INNER JOIN user ON listing.user_userID = user.userID';
+	if (!empty(req.body.country)) {
+		query = query + (!where ? " WHERE " :" AND ") + `country = '${req.body.country}'`;
+		where = true; 
+	}
+	if (isNum(req.body.quantity)) {
+		query = query + (!where ? " WHERE " :" AND ") + `quantity > ${req.body.quantity}`;
+		where = true; 
+	} 
+	if (isNum(req.body.product)) {
+		query = query + (!where ? " WHERE " :" AND ") + `productID = ${req.body.product}`;
+		where = true; 
+	}
+	let asc = req.body.order === "asc";
+	switch(req.body.sortby) {
+		case "alpha":
+			query = query + " ORDER BY email " + (asc ? "ASC" : "DESC" );
+			break;
+		case "price":
+			query = query + " ORDER BY price " + (asc ? "ASC" : "DESC" );
+			break;
+		case "quantity":
+			query = query + " ORDER BY quantity " + (asc ? "ASC" : "DESC" );
+			break;
+	};
+
+	console.log(query); 
+
+	connection.query(query, (err, rows, fields) => {
+		if (err) throw err;
+		else {
+			if (isNum(req.body.rownum) && isNum(req.body.limit)) {
+				res.status(200).send(JSON.stringify(rows.split(req.body.rownum, req.body.rownum + req.body.limit)));
+			} else {
+				res.status(200).send(JSON.stringify(rows));
+			};
+		};
+	});
+});
+
+//POST /listings
+app.post('/listings', (req, res) => {
+	verifyCookie(req.body.cookie, valid => {
+		if (!valid) {
+			res.status(403).send("invalid_cookie");
+			return;
+		};
+
+		connection.query(`INSERT INTO listing (productID, price, quantity, user_userID) VALUES (${req.body.productID},${req.body.price},${req.body.quantity},${idFromCookie(req.body.cookie)})`,
+		(err, rows, fields) => {
+			if (err) throw err;
+			res.status(200).send("success");
+		});
+	});
+});
+
+//GET /listings/{listingID}
+app.get('/listings/:id', (req, res) => {
+	connection.query(`SELECT * FROM listing WHERE listingID = ${req.params.id}`, 
+	(err, rows, fields) => {
+		if (err) throw err;
+		if (rows.length === 0) res.status(404).send();
+		else res.status(200).send(JSON.stringify(rows[0]));
+	});
+});
+
+//POST /listings/{listingID}
+app.post('/listings/:id', (req, res) => {
+	verifyCookie(req.body.cookie, valid => {
+		if (!valid) {
+			res.status(403).send("invalid_cookie");
+			return;
+		};
+
+		let id = idFromCookie(req.body.cookie);
+
+		connection.query(`SELECT listingID FROM listing WHERE listingID = ${req.params.id} AND ${req.body.quantity} < quantity`,
+		(err, rows, fields) => {
+			if (err) throw err;
+			if (rows.length === 0) res.status(400).send("id or quantity invalid");
+			else {
+				connection.query(`INSERT INTO orders (datetime, country, productID, quantity, buyerID, sellerID, addressID, orderStatus) VALUES (now(), (SELECT country FROM user WHERE userID = ${id} LIMIT 1), (SELECT productID FROM listing WHERE listingID = ${req.params.id} LIMIT 1), ${req.body.quantity}, (SELECT user_userID FROM listing WHERE listingID = ${req.params.id} LIMIT 1), ${id}, (SELECT id FROM address WHERE user_userID = ${id} ORDER BY id DESC LIMIT 1), "Pending")`,
+				(err, rows, fields) => {
+					if (err) throw err;
+					res.status(200).send("success");
+				});
+			};
+		});
+
+	});
+});
+
+//PUT /listings/{listingID}
+app.put('/listings/:id', (req, res) => {
+	const empty = v => typeof v === "undefined" || v === "";
+	const nope = v => empty(v) || isNaN(Number(v));
+
+	if (empty(req.body.cookie) || nope(req.body.productID) || nope(req.body.price) || nope(req.body.quantity) ) {
+		res.status(400).send("one or more fields is missing");
+		return;
+	};
+
+	connection.query(`UPDATE listing SET productID = ${req.body.productID}, price = ${req.body.price}, quantity = ${req.body.quantity} WHERE listingID = ${req.params.id} AND user_userID = ${idFromCookie(req.body.cookie)}`, 
+	(err, rows, fields) => {
+		if (err) throw err;
+		else if (rows.length === 0) res.status(400).send("error");
+		else res.status(200).send("success");
+	});
+});
+
+//DELETE /listings/{listingID}
+app.delete('/listings/:id', (req, res) => {
+	connection.query(`DELETE FROM listing WHERE listingID = ${req.params.id} AND user_userID = ${idFromCookie(req.body.cookie)}`, 
+	(err, rows, fields) => {
+		if (err) throw err;
+		else res.status(200).send("success");
+	});
+});
+
 //GET /types
 app.get('/types', (req, res) => {
 	connection.query('SELECT * FROM type', (err, rows, fields) => {
@@ -298,7 +489,29 @@ app.get('/types', (req, res) => {
 	});
 });
 
+//GET /stats/listings
+app.get('/stats/listings', (req, res) => {
+	connection.query('SELECT city, state, country, COUNT(listingID) AS numListings FROM user INNER JOIN listing ON listing.user_userID = user.userID INNER JOIN address ON address.user_userID = user.userID GROUP BY city, state, country', (err, rows, fields) => {
+		if (err) throw err;
+		res.status(200).send(JSON.stringify(rows));
+	});
+});
 
+//GET /stats/orders
+app.get('/stats/orders', (req, res) => {
+	connection.query('SELECT YEAR(date) AS year, MONTH(date) AS month, country, COUNT(transID) AS num FROM orders GROUP BY year, month, country ORDER BY year, month, country', (err, rows, fields) => {
+		if (err) throw err;
+		res.status(200).send(JSON.stringify(rows));
+	});
+});
+
+//GET /stats/distributors
+app.get('/stats/distributors', (req, res) => {
+	connection.query('SELECT email, name, phone, user.country AS country, COUNT(transID) AS numorders FROM user INNER JOIN orders ON user.userID = orders.sellerID GROUP BY userID ORDER BY COUNT(transID) DESC LIMIT 10', (err, rows, fields) => {
+		if (err) throw err;
+		res.status(200).send(JSON.stringify(rows));
+	});
+});
 
 //connecting the express object to listen on a particular port as defined in the config object.
 app.listen(config.port, config.host, (e) => {
