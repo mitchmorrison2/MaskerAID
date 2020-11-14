@@ -1,7 +1,7 @@
 import React from 'react';
 import { Item } from '../models/Item';
 import "./Home.css";
-
+import {  Link } from 'react-router-dom';
 
 
 
@@ -42,11 +42,12 @@ export class Itemdetails extends React.Component{
 
     render(){
         return <>
-            <br />
-            <br />
-            <br />
+            
             <h3> Available Products: </h3>
             <br />
+            <div>
+                
+            </div>
             <li><div class="card" 
             style={{
                 width: "500%",
@@ -69,6 +70,12 @@ export class Itemdetails extends React.Component{
        </div>
         </div>
         </li>
+        <div>     
+                    <button id= 'order-button'>
+                    
+                    <Link className="btn btn-link order-history-button" to="/orders"> Order History</Link>
+                    </button>
+                </div>
             <br />
             <br />
         </>

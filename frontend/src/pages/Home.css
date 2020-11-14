@@ -8,7 +8,34 @@
     height: 60em;
     background-color: aquamarine;
 }
-
+#order-button{
+    border-top: 1px solid #08273b;
+   background: #94d665;
+   background: -webkit-gradient(linear, left top, left bottom, from(#439c3e), to(#94d665));
+   background: -webkit-linear-gradient(top, #439c3e, #94d665);
+   background: -moz-linear-gradient(top, #439c3e, #94d665);
+   background: -ms-linear-gradient(top, #439c3e, #94d665);
+   background: -o-linear-gradient(top, #439c3e, #94d665);
+   padding: 8.5px 17px;
+   -webkit-border-radius: 8px;
+   -moz-border-radius: 8px;
+   border-radius: 8px;
+   -webkit-box-shadow: rgba(0,0,0,1) 0 1px 0;
+   -moz-box-shadow: rgba(0,0,0,1) 0 1px 0;
+   box-shadow: rgba(0,0,0,1) 0 1px 0;
+   text-shadow: rgba(0,0,0,.4) 0 1px 0;
+   color: white;
+   font-size: 20px;
+   font-family: Helvetica, Arial, Sans-Serif;
+   text-decoration: none;
+   vertical-align: middle;
+   margin-right: 0;
+  }
+  #order-button:hover {
+    border-top-color: #3b997a;
+    background: #3b997a;
+    color: #ffffff;
+  }
 li{
     list-style-type: none;
 }
