@@ -28,6 +28,7 @@ export class OrderHistory extends React.Component{
             distributorId: 1
         }
     ]
+    
 //cards for each individual order  
     render() {
         return (
@@ -53,9 +54,9 @@ export class OrderHistory extends React.Component{
        </div>
         </div>
         </li>
-        <span>Go to create account </span>
-          <Link className="btn btn-link create-account" to="/create">
-            Create account
+        <span>Go back </span>
+          <Link className="btn btn-link back-button" to="/home">
+             Back
           </Link>
         </div>
         
