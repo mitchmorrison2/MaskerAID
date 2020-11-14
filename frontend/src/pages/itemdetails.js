@@ -1,5 +1,5 @@
 import React from 'react';
-import {Item} from "./Models/Item";
+import { Item } from '../models/Item';
 import "./Home.css";
 
 
