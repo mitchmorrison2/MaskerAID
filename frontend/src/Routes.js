@@ -1,11 +1,7 @@
-import { CreateAccount } from "./pages/CreateAccount";
-const { UserProfile } = require("./pages/UserProfile");
-const { OrderHistory } = require("./pages/OrderHistory");
-const { Login}  = require("./pages/Login");
-export const Routes = [
-    //update these to true for when actual accounts are being used
-    { path: '/', component: Login, authRequired: false},
-    { path: '/OrderHistory', component: OrderHistory, authRequired: false},
-    { path: '/create', component: CreateAccount, authRequired: false},
-    { path: '/UserProfile', component: UserProfile, authRequired: false}
-];
+import {CreateAccount} from "./pages/CreateAccount";
+import {Login} from "./pages/Login";
+
+export const ROUTES = [
+    { path: '/create', component: CreateAccount },
+    { path: '/', component: Login }
+]
