@@ -9,7 +9,9 @@
     background-color: aquamarine;
 }
 
-
+li{
+    list-style-type: none;
+}
 .ProductDisplay{
     float:bottom;
 }
