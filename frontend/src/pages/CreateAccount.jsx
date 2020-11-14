@@ -97,7 +97,7 @@ export class CreateAccount extends React.Component {
                     value={this.state.country}
                     onChange={e => this.setState({country: e.target.value})}>
 
-                        <option value="" selected="selected">Select Country</option> 
+                        <option value="">Select Country</option> 
                         <option value="United States">United States</option> 
                         <option value="United Kingdom">United Kingdom</option> 
                         <option value="Afghanistan">Afghanistan</option> 
@@ -347,7 +347,7 @@ export class CreateAccount extends React.Component {
                 </div>}
                 {this.state.success && <div className="alert alert-success">
                     Account created successfully. Back to 
-                    <Link className="btn btn-link" to="/">login</Link>
+                    <Link className="btn btn-link text-link" to="/"> login</Link>
                 </div>}
             </div>
 

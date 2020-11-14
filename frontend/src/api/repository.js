@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export class repository {
-    url = "";   //put ec2 instance here
+    url = "http://ec2-34-214-157-239.us-west-2.compute.amazonaws.com:3000";   //put ec2 instance here
 
     config = {
         headers: {
@@ -29,6 +29,12 @@ export class repository {
         return new Promise((resolve, reject) => {
             axios.post(`${this.url}/login`, {email: email, password: password})
         })
+        .then(response => {
+            console.log(response);
+        })
+        .catch(e => {
+            console.log(e);
+        });
     }
 
 }//end repository
