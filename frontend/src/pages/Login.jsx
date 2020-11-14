@@ -25,7 +25,9 @@ import {repository} from '../api/repository';
 
     handleLogin = () => {
 
-      this.repo.login(this.state.email, this.state.password);
+      //this.repo.login(this.state.email, this.state.password);
+      this.repo.getAccount(1490);
+      this.props.onLogin();
 
     }
 
