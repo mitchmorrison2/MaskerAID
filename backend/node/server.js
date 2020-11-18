@@ -13,8 +13,8 @@ const salt = "wtfThisIsn'tRandom";
 var connection = mysql.createConnection({
   host: 'lab-db.ca2edemxewbg.us-east-1.rds.amazonaws.com',
   port: '3306',
-  user: 'new_master_chris',
-  password: '', //Wouldn't you like to know!
+  user: 'new_master_user',
+  password: 'password', //Wouldn't you like to know!
   database: 'maskeraid'
 });
 
